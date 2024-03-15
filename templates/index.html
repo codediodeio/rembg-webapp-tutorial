@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>✂️ rmbg</title>
+    <style>
+      body {
+        height: 100vh;
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .drop-zone {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        width: 80vw;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .drop-zone.dragover {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dropZone" class="drop-zone">
+      <h1>rmbg</h1>
+      <form
+        id="uploadForm"
+        action="/"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <input id="fileInput" type="file" name="file" />
+        <input type="submit" value="rm" />
+      </form>
+    </div>
+
+    <script>
+      let dropZone = document.getElementById("dropZone");
+      let fileInput = document.getElementById("fileInput");
+      let uploadForm = document.getElementById("uploadForm");
+
+      dropZone.addEventListener("click", function () {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files.length > 0) {
+          uploadForm.submit();
+        }
+      });
+
+      dropZone.addEventListener("dragover", function (e) {
+        this.classList.add("dragover");
+      });
+
+      dropZone.addEventListener("dragleave", function (e) {
+        this.classList.remove("dragover");
+      });
+
+      dropZone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove("dragover");
+
+        let file = e.dataTransfer.files[0];
+        fileInput.files = e.dataTransfer.files;
+        uploadForm.submit();
+      });
+    </script>
+  </body>
+</html>
