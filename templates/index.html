@@ -59,6 +59,7 @@
       });
 
       dropZone.addEventListener("dragover", function (e) {
+        e.preventDefault();
         this.classList.add("dragover");
       });
 
