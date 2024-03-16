@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  rembg:
+    image: v1.0-pv-3.12.2-slim
+    restart: unless-stopped
+    ports:
+      - 5100:5100
+    network_mode: bridge
