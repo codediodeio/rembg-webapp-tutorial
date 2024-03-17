@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  rembg-webapp:
+    image: ghcr.io/101br03k/rembg-webapp/v1.1-pv-3.12.2-slim
+    restart: unless-stopped
+    ports:
+      - 5100:5100
+    container_name: rembg-webapp
+    network_mode: bridge
