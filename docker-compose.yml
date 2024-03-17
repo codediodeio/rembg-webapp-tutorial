@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  nginx-up-page:
+    image: ghcr.io/101br03k/rembg-webapp/v1.0-pv-3.12.2-slim
+    restart: unless-stopped
+    ports:
+      - 5100:5100
+    container_name: nginx-up-page
+    network_mode: bridge
