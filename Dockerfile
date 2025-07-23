@@ -12,6 +12,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Environment variables for authentication
+# Set these when running the container to enable authentication
+# If not set, the app will run without authentication
+ENV BASIC_AUTH_USER=""
+ENV BASIC_AUTH_PASS=""
+ENV SECRET_KEY=""
+
 EXPOSE 5100
 
 CMD ["python", "app.py"]
