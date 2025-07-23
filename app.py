@@ -16,11 +16,12 @@ def setup_logging():
     if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
         return logging.getLogger(__name__)
 
-    # Create logs directory if it doesn't exist
-    os.makedirs('logs', exist_ok=True)
-
     # Get log level from environment (default to INFO)
     log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+
+    # Check if we're running in production/container mode
+    is_production = os.environ.get('FLASK_ENV', 'development').lower() == 'production'
+    use_file_logging = not is_production  # Only use file logging in development
 
     # Create formatter
     formatter = logging.Formatter(
@@ -35,27 +36,39 @@ def setup_logging():
     # Clear existing handlers
     root_logger.handlers.clear()
 
-    # Console handler
+    # Console handler (always enabled)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    # File handler for all logs
-    file_handler = logging.FileHandler('logs/app.log')
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-    root_logger.addHandler(file_handler)
+    # File handlers (only in development or when explicitly enabled)
+    if use_file_logging:
+        try:
+            # Create logs directory if it doesn't exist
+            os.makedirs('logs', exist_ok=True)
 
-    # Separate file handler for errors
-    error_handler = logging.FileHandler('logs/error.log')
-    error_handler.setLevel(logging.ERROR)
-    error_handler.setFormatter(formatter)
-    root_logger.addHandler(error_handler)
+            # File handler for all logs
+            file_handler = logging.FileHandler('logs/app.log')
+            file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(formatter)
+            root_logger.addHandler(file_handler)
+
+            # Separate file handler for errors
+            error_handler = logging.FileHandler('logs/error.log')
+            error_handler.setLevel(logging.ERROR)
+            error_handler.setFormatter(formatter)
+            root_logger.addHandler(error_handler)
+
+        except PermissionError:
+            # Fallback to console-only logging if file creation fails
+            console_handler.setLevel(logging.DEBUG)
+            root_logger.warning("Could not create log files, using console logging only")
 
     # Reduce noise from external libraries
     logging.getLogger('werkzeug').setLevel(logging.WARNING)
     logging.getLogger('PIL').setLevel(logging.WARNING)
+    logging.getLogger('rembg').setLevel(logging.WARNING)
 
     return logging.getLogger(__name__)
 
@@ -92,6 +105,7 @@ if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
     logger.info(f"  - FLASK_ENV: {FLASK_ENV}")
     logger.info(f"  - DEBUG_MODE: {DEBUG_MODE}")
     logger.info(f"  - LOG_LEVEL: {os.environ.get('LOG_LEVEL', 'INFO')}")
+    logger.info(f"  - FILE_LOGGING: {'DISABLED' if FLASK_ENV == 'production' else 'ENABLED'}")
     logger.info(f"Environment Variables:")
     logger.info(f"  - BASIC_AUTH_USER: {'SET' if BASIC_AUTH_USER else 'NOT SET'}")
     logger.info(f"  - BASIC_AUTH_PASS: {'SET' if BASIC_AUTH_PASS else 'NOT SET'}")
