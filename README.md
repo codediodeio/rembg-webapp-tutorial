@@ -134,7 +134,6 @@ rembg-webapp-tutorial/
 ├── docker-compose.yml        # Docker Compose configuration
 ├── Dockerfile                # Standard Docker configuration
 ├── Dockerfile.prod          # Production Docker configuration
-├── Dockerfile.prod-simple   # Simplified production Docker
 ├── templates/
 │   ├── index.html           # Main upload interface
 │   └── login.html           # Authentication page
