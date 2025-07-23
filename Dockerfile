@@ -15,6 +15,12 @@ COPY . .
 # Create logs directory
 RUN mkdir -p logs
 
+# Flask environment configuration
+# FLASK_ENV: development, production
+# FLASK_DEBUG: True, False
+ENV FLASK_ENV=""
+ENV FLASK_DEBUG=""
+
 # Environment variables for authentication
 # Set these when running the container to enable authentication
 # If not set, the app will run without authentication

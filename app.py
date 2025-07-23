@@ -63,7 +63,21 @@ def setup_logging():
 logger = setup_logging()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Configuration based on environment
+FLASK_ENV = os.environ.get('FLASK_ENV', 'development').lower()
+DEBUG_MODE = os.environ.get('FLASK_DEBUG', 'True' if FLASK_ENV == 'development' else 'False').lower() == 'true'
+
+app.config.update(
+    SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production'),
+    DEBUG=DEBUG_MODE,
+    TESTING=False,
+    # Production security settings
+    SESSION_COOKIE_SECURE=FLASK_ENV == 'production',
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=3600,  # 1 hour
+)
 
 # Get auth credentials from environment variables
 BASIC_AUTH_USER = os.environ.get('BASIC_AUTH_USER')
@@ -74,11 +88,17 @@ if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
     logger.info("=" * 60)
     logger.info("🚀 RMBG Web Application Starting")
     logger.info("=" * 60)
+    logger.info(f"Environment Configuration:")
+    logger.info(f"  - FLASK_ENV: {FLASK_ENV}")
+    logger.info(f"  - DEBUG_MODE: {DEBUG_MODE}")
+    logger.info(f"  - LOG_LEVEL: {os.environ.get('LOG_LEVEL', 'INFO')}")
     logger.info(f"Environment Variables:")
     logger.info(f"  - BASIC_AUTH_USER: {'SET' if BASIC_AUTH_USER else 'NOT SET'}")
     logger.info(f"  - BASIC_AUTH_PASS: {'SET' if BASIC_AUTH_PASS else 'NOT SET'}")
-    logger.info(f"  - SECRET_KEY: {'SET' if app.secret_key != 'dev-secret-key-change-in-production' else 'USING DEFAULT'}")
-    logger.info(f"  - LOG_LEVEL: {os.environ.get('LOG_LEVEL', 'INFO')}")
+    logger.info(f"  - SECRET_KEY: {'SET' if app.config['SECRET_KEY'] != 'dev-secret-key-change-in-production' else 'USING DEFAULT'}")
+    logger.info(f"Security Settings:")
+    logger.info(f"  - SESSION_COOKIE_SECURE: {app.config['SESSION_COOKIE_SECURE']}")
+    logger.info(f"  - SESSION_COOKIE_HTTPONLY: {app.config['SESSION_COOKIE_HTTPONLY']}")
     logger.info(f"Authentication: {'ENABLED' if (BASIC_AUTH_USER and BASIC_AUTH_PASS) else 'DISABLED'}")
 
     # Log password length for debugging (without exposing actual password)
@@ -274,12 +294,17 @@ def internal_error(error):
 if __name__ == '__main__':
     # Only show startup message in main process, not reloader
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-        logger.info("🌟 Starting Flask development server")
+        if DEBUG_MODE:
+            logger.info("🌟 Starting Flask DEVELOPMENT server")
+            logger.warning("⚠️  DEBUG MODE ENABLED - DO NOT USE IN PRODUCTION!")
+        else:
+            logger.info("🌟 Starting Flask server in PRODUCTION mode")
+            logger.info("✅ Debug mode disabled - Safe for production")
         logger.info(f"Server will be available at: http://0.0.0.0:5100")
         logger.info("=" * 60)
 
     try:
-        app.run(host='0.0.0.0', debug=True, port=5100)
+        app.run(host='0.0.0.0', debug=DEBUG_MODE, port=5100)
     except KeyboardInterrupt:
         logger.info("🛑 Server stopped by user")
     except Exception as e:
