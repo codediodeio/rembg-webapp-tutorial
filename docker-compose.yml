@@ -1,0 +1,16 @@
+services:
+  rembg-app:
+    image: my-rembg-app
+    container_name: rembg-app
+    ports:
+      - "5101:5100"
+    restart: always
+    environment:
+      - BASIC_AUTH_USER=admin
+      - BASIC_AUTH_PASS=strong_pass
+      - SECRET_KEY=strong_sec
+      - LOG_LEVEL=INFO  # Logging level (DEBUG/INFO/WARNING/ERROR)
+      - FLASK_ENV=production # Environment mode (development/production)
+      - FLASK_DEBUG=False # Debug mode (True/False)
+    volumes:
+      - ./logs:/app/logs  # Persist logs to host

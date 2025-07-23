@@ -41,7 +41,42 @@ Watch the [tutorial](https://youtu.be/cw34KMPSt4k) on YouTube for a step-by-step
 
 ## 🐳 Docker Deployment
 
-### Basic Docker Run
+### Docker Compose (Recommended)
+
+The easiest way to deploy is using Docker Compose:
+
+1. **Build the image**:
+   ```bash
+   docker build -t my-rembg-app .
+   ```
+
+2. **Start with Docker Compose**:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access the app**: Open http://localhost:5101
+
+4. **View logs**:
+   ```bash
+   docker-compose logs -f
+   ```
+
+5. **Stop the service**:
+   ```bash
+   docker-compose down
+   ```
+
+The included `docker-compose.yml` configures:
+- **Port mapping**: 5101 (host) → 5100 (container)
+- **Authentication**: Enabled with admin/strong_pass
+- **Production mode**: Optimized for production use
+- **Log persistence**: Logs saved to `./logs` directory
+- **Auto-restart**: Container restarts automatically
+
+### Manual Docker Run
+
+#### Basic Docker Run
 ```bash
 # Build the image
 docker build -t rembg-webapp .
@@ -57,7 +92,7 @@ docker run -p 5100:5100 \
   rembg-webapp
 ```
 
-### Production Docker Run
+#### Production Docker Run
 ```bash
 docker run -p 5100:5100 \
   -e FLASK_ENV=production \
@@ -96,6 +131,7 @@ rembg-webapp-tutorial/
 ├── basic.py                  # Basic example script
 ├── requirements.txt          # Python dependencies
 ├── requirements-prod.txt     # Production dependencies
+├── docker-compose.yml        # Docker Compose configuration
 ├── Dockerfile                # Standard Docker configuration
 ├── Dockerfile.prod          # Production Docker configuration
 ├── Dockerfile.prod-simple   # Simplified production Docker
