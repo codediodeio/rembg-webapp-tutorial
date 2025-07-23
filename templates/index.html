@@ -1,80 +1,98 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>✂️ rmbg</title>
-    <style>
-      body {
-        height: 100vh;
-        display: flex;
 
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-      }
+<head>
+  <title>✂️ rmbg</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
 
-      .drop-zone {
-        border: 2px dashed #ccc;
-        padding: 20px;
-        width: 80vw;
-        height: 80vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-
-      .drop-zone.dragover {
-        background-color: #f0f0f0;
-      }
-    </style>
-  </head>
-  <body>
+<body>
+  <div class="container">
+    <!-- Upload Zone -->
     <div id="dropZone" class="drop-zone">
+      <div class="floating">
+        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 10L12 5L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M20 16V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V16"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+
       <h1>rmbg</h1>
-      <form
-        id="uploadForm"
-        action="/"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        <input id="fileInput" type="file" name="file" />
+      <p class="subtitle">Remove backgrounds from images instantly<br>Drag & drop or click to upload</p>
+
+      <form id="uploadForm" action="/" method="post" enctype="multipart/form-data">
+        <input id="fileInput" type="file" name="file" accept="image/*" />
+        <label for="fileInput" class="file-input-label">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M3 16.5V18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75V16.5M16.5 12L12 7.5M12 7.5L7.5 12M12 7.5V16.5"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Choose Image
+        </label>
         <input type="submit" value="rm" />
       </form>
+
+      <p class="drag-text">Supports PNG, JPG, JPEG, WEBP</p>
     </div>
 
-    <script>
-      let dropZone = document.getElementById("dropZone");
-      let fileInput = document.getElementById("fileInput");
-      let uploadForm = document.getElementById("uploadForm");
+    <!-- Loading State -->
+    <div id="loadingContainer" class="loading-container">
+      <div class="spinner"></div>
+      <h2 style="color: #667eea; margin-bottom: 10px;">Processing Image</h2>
+      <p style="color: rgba(107, 114, 128, 0.8);">Removing background, please wait...</p>
+    </div>
 
-      dropZone.addEventListener("click", function () {
-        fileInput.click();
-      });
+    <!-- Preview Container -->
+    <div id="previewContainer" class="preview-container">
+      <div class="preview-header">
+        <h2 class="preview-title">Background Removed!</h2>
+        <p class="preview-subtitle">Compare your before and after images</p>
+      </div>
 
-      fileInput.addEventListener("change", function () {
-        if (fileInput.files.length > 0) {
-          uploadForm.submit();
-        }
-      });
+      <div class="image-comparison">
+        <div class="image-preview">
+          <div class="image-label">Original</div>
+          <div class="image-frame">
+            <img id="originalImage" class="preview-image" alt="Original image">
+          </div>
+        </div>
+        <div class="image-preview">
+          <div class="image-label">Background Removed</div>
+          <div class="image-frame">
+            <img id="processedImage" class="preview-image" alt="Processed image">
+          </div>
+        </div>
+      </div>
 
-      dropZone.addEventListener("dragover", function (e) {
-        this.classList.add("dragover");
-      });
+      <div class="action-buttons">
+        <a id="downloadBtn" class="btn btn-primary" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M3 16.5V18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75V16.5M7.5 12L12 16.5M12 16.5L16.5 12M12 16.5V3"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Download Result
+        </a>
+        <button id="newImageBtn" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M3 16.5V18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75V16.5M16.5 12L12 7.5M12 7.5L7.5 12M12 7.5V16.5"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Upload New Image
+        </button>
+      </div>
+    </div>
+  </div>
 
-      dropZone.addEventListener("dragleave", function (e) {
-        this.classList.remove("dragover");
-      });
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
 
-      dropZone.addEventListener("drop", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.classList.remove("dragover");
-
-        let file = e.dataTransfer.files[0];
-        fileInput.files = e.dataTransfer.files;
-        uploadForm.submit();
-      });
-    </script>
-  </body>
 </html>

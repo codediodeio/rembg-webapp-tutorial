@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>🔐 Login - rmbg</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 50px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      text-align: center;
+    }
+
+    .login-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .login-subtitle {
+      color: rgba(107, 114, 128, 0.8);
+      font-size: 1rem;
+      margin-bottom: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: rgba(107, 114, 128, 0.8);
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      margin-top: 10px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      display: none;
+    }
+
+    .remember-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: rgba(107, 114, 128, 0.8);
+    }
+
+    .remember-checkbox input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #667eea;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 40px 24px;
+        margin: 0 20px;
+      }
+
+      .login-title {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="login-container">
+      <h1 class="login-title">rmbg</h1>
+      <p class="login-subtitle">Please sign in to continue</p>
+
+      <div id="errorMessage" class="error-message"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" name="username" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" class="form-input" required>
+        </div>
+
+        <div class="remember-checkbox">
+          <input type="checkbox" id="rememberMe" checked>
+          <label for="rememberMe">Remember me on this device</label>
+        </div>
+
+        <button type="submit" id="loginBtn" class="login-btn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is already authenticated via localStorage
+    document.addEventListener('DOMContentLoaded', function () {
+      const storedAuth = localStorage.getItem('rmbg_auth');
+      if (storedAuth) {
+        // Verify with server
+        fetch('/auth-status')
+          .then(response => response.json())
+          .then(data => {
+            if (data.authenticated || !data.auth_required) {
+              window.location.href = '/';
+            }
+          })
+          .catch(() => {
+            // If verification fails, remove stored auth
+            localStorage.removeItem('rmbg_auth');
+          });
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const loginBtn = document.getElementById('loginBtn');
+      const errorMessage = document.getElementById('errorMessage');
+      const rememberMe = document.getElementById('rememberMe').checked;
+
+      // Disable button and show loading state
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Signing in...';
+      errorMessage.style.display = 'none';
+
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Store authentication in localStorage if remember me is checked
+          if (rememberMe) {
+            localStorage.setItem('rmbg_auth', 'true');
+          }
+
+          // Redirect to main app
+          window.location.href = '/';
+        } else {
+          throw new Error(data.error || 'Login failed');
+        }
+      } catch (error) {
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+      } finally {
+        // Re-enable button
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+
+</html>
