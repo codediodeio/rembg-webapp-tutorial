@@ -12,6 +12,10 @@ from datetime import datetime
 # Configure logging
 def setup_logging():
     """Setup comprehensive logging configuration"""
+    # Skip setup if we're in Flask's reloader process to avoid duplicates
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        return logging.getLogger(__name__)
+
     # Create logs directory if it doesn't exist
     os.makedirs('logs', exist_ok=True)
 
@@ -65,21 +69,22 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 BASIC_AUTH_USER = os.environ.get('BASIC_AUTH_USER')
 BASIC_AUTH_PASS = os.environ.get('BASIC_AUTH_PASS')
 
-# Startup logging
-logger.info("=" * 60)
-logger.info("🚀 RMBG Web Application Starting")
-logger.info("=" * 60)
-logger.info(f"Environment Variables:")
-logger.info(f"  - BASIC_AUTH_USER: {'SET' if BASIC_AUTH_USER else 'NOT SET'}")
-logger.info(f"  - BASIC_AUTH_PASS: {'SET' if BASIC_AUTH_PASS else 'NOT SET'}")
-logger.info(f"  - SECRET_KEY: {'SET' if app.secret_key != 'dev-secret-key-change-in-production' else 'USING DEFAULT'}")
-logger.info(f"  - LOG_LEVEL: {os.environ.get('LOG_LEVEL', 'INFO')}")
-logger.info(f"Authentication: {'ENABLED' if (BASIC_AUTH_USER and BASIC_AUTH_PASS) else 'DISABLED'}")
+# Startup logging - only log once (not in reloader process)
+if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+    logger.info("=" * 60)
+    logger.info("🚀 RMBG Web Application Starting")
+    logger.info("=" * 60)
+    logger.info(f"Environment Variables:")
+    logger.info(f"  - BASIC_AUTH_USER: {'SET' if BASIC_AUTH_USER else 'NOT SET'}")
+    logger.info(f"  - BASIC_AUTH_PASS: {'SET' if BASIC_AUTH_PASS else 'NOT SET'}")
+    logger.info(f"  - SECRET_KEY: {'SET' if app.secret_key != 'dev-secret-key-change-in-production' else 'USING DEFAULT'}")
+    logger.info(f"  - LOG_LEVEL: {os.environ.get('LOG_LEVEL', 'INFO')}")
+    logger.info(f"Authentication: {'ENABLED' if (BASIC_AUTH_USER and BASIC_AUTH_PASS) else 'DISABLED'}")
 
-# Log password length for debugging (without exposing actual password)
-if BASIC_AUTH_PASS:
-    logger.debug(f"Password length: {len(BASIC_AUTH_PASS)} characters")
-    logger.debug(f"Password starts with: '{BASIC_AUTH_PASS[:3]}...'")
+    # Log password length for debugging (without exposing actual password)
+    if BASIC_AUTH_PASS:
+        logger.debug(f"Password length: {len(BASIC_AUTH_PASS)} characters")
+        logger.debug(f"Password starts with: '{BASIC_AUTH_PASS[:3]}...'")
 
 def require_auth(f):
     @wraps(f)
@@ -267,9 +272,11 @@ def internal_error(error):
     return "Internal server error", 500
 
 if __name__ == '__main__':
-    logger.info("🌟 Starting Flask development server")
-    logger.info(f"Server will be available at: http://0.0.0.0:5100")
-    logger.info("=" * 60)
+    # Only show startup message in main process, not reloader
+    if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+        logger.info("🌟 Starting Flask development server")
+        logger.info(f"Server will be available at: http://0.0.0.0:5100")
+        logger.info("=" * 60)
 
     try:
         app.run(host='0.0.0.0', debug=True, port=5100)
@@ -278,5 +285,6 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error(f"❌ Server startup failed: {str(e)}", exc_info=True)
     finally:
-        logger.info("👋 Application shutdown")
-        logger.info("=" * 60)
+        if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+            logger.info("👋 Application shutdown")
+            logger.info("=" * 60)
