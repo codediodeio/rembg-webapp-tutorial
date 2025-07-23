@@ -13,6 +13,11 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 BASIC_AUTH_USER = os.environ.get('BASIC_AUTH_USER')
 BASIC_AUTH_PASS = os.environ.get('BASIC_AUTH_PASS')
 
+# Debug logging
+print(f"[DEBUG] BASIC_AUTH_USER: '{BASIC_AUTH_USER}'")
+print(f"[DEBUG] BASIC_AUTH_PASS: '{BASIC_AUTH_PASS}'")
+print(f"[DEBUG] Auth enabled: {bool(BASIC_AUTH_USER and BASIC_AUTH_PASS)}")
+
 def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -37,10 +42,18 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
+        # Debug logging
+        print(f"[DEBUG] Login attempt - Username: '{username}', Password length: {len(password) if password else 0}")
+        print(f"[DEBUG] Expected username: '{BASIC_AUTH_USER}', Expected password length: {len(BASIC_AUTH_PASS) if BASIC_AUTH_PASS else 0}")
+        print(f"[DEBUG] Username match: {username == BASIC_AUTH_USER}")
+        print(f"[DEBUG] Password match: {password == BASIC_AUTH_PASS}")
+
         if username == BASIC_AUTH_USER and password == BASIC_AUTH_PASS:
             session['authenticated'] = True
+            print("[DEBUG] Login successful")
             return jsonify({'success': True})
         else:
+            print("[DEBUG] Login failed - credentials don't match")
             return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
 
     return render_template('login.html')
