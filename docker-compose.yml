@@ -1,9 +1,9 @@
 services:
   rembg-app:
-    image: my-rembg-app
+    image: ghcr.io/rnz01/my-rembg-app:latest
     container_name: rembg-app
     ports:
-      - "5101:5100"
+      - "3010:5100"
     restart: always
     environment:
       - BASIC_AUTH_USER=admin
