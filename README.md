@@ -130,11 +130,8 @@ rembg-webapp-tutorial/
 ├── app.py                    # Main Flask application
 ├── basic.py                  # Basic example script
 ├── requirements.txt          # Python dependencies
-├── requirements-prod.txt     # Production dependencies
 ├── docker-compose.yml        # Docker Compose configuration
 ├── Dockerfile                # Standard Docker configuration
-├── Dockerfile.prod          # Production Docker configuration
-├── Dockerfile.prod-simple   # Simplified production Docker
 ├── templates/
 │   ├── index.html           # Main upload interface
 │   └── login.html           # Authentication page
