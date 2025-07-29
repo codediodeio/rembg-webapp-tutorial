@@ -6,11 +6,14 @@ services:
       - "3010:5100"
     restart: always
     environment:
-      - BASIC_AUTH_USER=admin
-      - BASIC_AUTH_PASS=strong_pass
-      - SECRET_KEY=strong_sec
-      - LOG_LEVEL=INFO  # Logging level (DEBUG/INFO/WARNING/ERROR)
-      - FLASK_ENV=production # Environment mode (development/production)
-      - FLASK_DEBUG=False # Debug mode (True/False)
+      - BASIC_AUTH_USER=${BASIC_AUTH_USER}
+      - BASIC_AUTH_PASS=${BASIC_AUTH_PASS}
+      - SECRET_KEY=${SECRET_KEY}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - FLASK_ENV=${FLASK_ENV}
+      - FLASK_DEBUG=${FLASK_DEBUG}
     volumes:
-      - ./logs:/app/logs  # Persist logs to host
+      - rembg_logs:/app/logs  # Persist logs using named volume
+
+volumes:
+  rembg_logs:
