@@ -1,12 +1,13 @@
 FROM python:3.9-slim
 
-# Install system dependencies
+# Install system dependencies including wget for downloading model
 RUN apt-get update && apt-get install -y \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# download this https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx
-# copy model to avoid unnecessary download
-COPY u2net.onnx /home/.u2net/u2net.onnx
+# Create directory and download u2net.onnx model
+RUN mkdir -p /home/.u2net && \
+    wget -O /home/.u2net/u2net.onnx https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx
 
 WORKDIR /app
 
