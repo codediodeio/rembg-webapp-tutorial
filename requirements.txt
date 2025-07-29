@@ -1,4 +1,5 @@
 onnxruntime
-flask
-rembg
-pillow
+flask>=2.0.0
+rembg>=2.0.0
+pillow>=9.0.0
+gunicorn>=20.1.0
